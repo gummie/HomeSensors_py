@@ -3,44 +3,46 @@ from modules.arduinocontrol import ArduinoControl
 from queue import Queue
 import threading
 import time
-
-exitFlag = 0
-
-# sens = SensorControl
-# ardc = ArduinoControl
-#
-# sens.run_sensors()
-# ardc.arduino_comm()
+import sqlite3
 
 threadPool = Queue()
 
-# for i in range(5):
-#     t = SensorControl(threadPool)
+threadList = [SensorControl, ArduinoControl]
+threads = []
 
-sensorThread = SensorControl(threadPool)
+sensorThread = SensorControl('sensorThread', threadPool)
+threads.append(sensorThread)
+arduinoThread = ArduinoControl('AdrduinoThread', threadPool)
+threads.append(arduinoThread)
 
-sensorThread.start()
-
-threadPool.put(SensorControl)
-
-print('Thread is alive:', sensorThread.is_alive())
 print("Number of active threads:", threading.active_count())
 
-# Fill the queue
-# for i in range(5):
-#     threadPool.put(i)
+for t in threads:
+    t.start()
 
-#queueLock.release()
+# sensorThread.start()
+# arduinoThread.start()
 
-# Wait for queue to empty
-# while not threadPool.empty():
-#     pass
+print("Number of active threads:", threading.active_count())
 
-# Notify threads it's time to exit
-# exitFlag = 1
+for t in threadList:
+    threadPool.put(t)
 
-# Wait for all threads to complete
-# for t in threads:
-#     t.join()
-threadPool.join()
+print("Number of active threads:", threading.active_count())
+
+# threadPool.join()
+
+print("Queue size:", threadPool.qsize())
+
+for t in threads:
+    t.join()
+
+# sensorThread.join()
+# arduinoThread.join()
+
+for t in threads:
+    print("Thread is alive:", t.is_alive())
+
 print("Exiting Main Thread")
+
+print("Number of active threads:", threading.active_count())
